@@ -1,28 +1,38 @@
 % -------------------- Initialize and Set Parameters --------------------
-% addpath(genpath('ltfat-2.6.0'));
-% ltfatstart;
+%addpath(genpath('ltfat-2.6.0')); % Add LTFAT library to the path
+%ltfatstart; % Initialize LTFAT
 
 % Parameters for frame and symbol
 a = 10;
 M = 100;
-L = a * M;
+L = a * M; % Total window length
 
 % -------------------- Select Window Type --------------------
 % Choose between 'Gaussian' and 'Box'
-windowType = 'gaussian'; % Change to 'Box' to use a box window
+windowType = 'Gaussian'; % Change to 'Box' to use a box window
 
 % -------------------- Generate Window --------------------
 switch lower(windowType)
     case 'gaussian'
         g = pgauss(L);
     case 'box'
-        g = zeros(N, 1);
-        w = floor(N / 20);
+        % Box window: small segments of ones with wrap-around
+        g = zeros(L, 1);        % Initialize window with zeros
+        w = floor(L / 20);      % Width of the ones segment (5% of L)
         
+        % Ensure w is at least 1 to avoid empty segments
+        if w < 1
+            w = 1;
+        end
+        
+        % Define indices for the first segment
         g(1:w) = 1;
-        g(N - w : N) = 1;
-
-        g = g * 1/(sqrt(sum(g.^2)));
+        
+        % Define indices for the second segment with correct variable
+        g(L - w + 1:L) = 1; % Corrected from g(N - w : L) = 1;
+        
+        % Normalize the window
+        g = g / sqrt(sum(g.^2));
     otherwise
         error('Unsupported window type. Choose either "Gaussian" or "Box".');
 end
@@ -31,32 +41,48 @@ end
 [Fa, Fs] = framepair('dgt', g, 'dual', a, M);
 
 % -------------------- Load the Binary Symbol Image --------------------
-symbol = load_symbol(8, M);
-symbol = double(symbol > 0.5);
+symbol = load_symbol(9, M); % Assuming load_symbol is a custom function
+symbol = double(symbol > 0.5); % Binarize the symbol
 
-s = framenative2coef(Fa, symbol);
+% -------------------- Convert Frame Coefficients to Native Coefficients --------------------
+s = framenative2coef(Fa, symbol); % Assuming framenative2coef is a custom function
 
 % -------------------- Compute Eigenvalues --------------------
-D = framemuleigs(Fa, Fs, s, a*M);
-D = real(D);
+D = framemuleigs(Fa, Fs, s, a * M); % Assuming framemuleigs is a custom function
+D = real(D); % Ensure eigenvalues are real
 
-BW = logical(symbol);
+% -------------------- Ensure the 'symbol' Image is Binary --------------------
+BW = logical(symbol); % Convert to logical for image processing
 
 % -------------------- Preprocess the Image --------------------
 % Remove small objects to reduce noise (adjust the threshold as needed)
+BW_clean = bwareaopen(BW, 20); % Removes objects with fewer than 20 pixels
 
-BW_clean = bwareaopen(BW, 20);
-
+% -------------------- Measure Perimeter Using regionprops --------------------
 props = regionprops(BW_clean, 'Perimeter');
-totalPerimeter_regionprops = sum([props.Perimeter]);
 
-A = sum(s) * a / M; % area normalized
-B = totalPerimeter_regionprops * sqrt(a / M); % perimeter, normalized
+% Calculate total perimeter
+if isempty(props)
+    disp('No objects detected in the image.');
+    totalPerimeter_regionprops = 0;
+else
+    totalPerimeter_regionprops = sum([props.Perimeter]);
+end
+
+% -------------------- Define Parameters A and B --------------------
+A = sum(s) * a / M; % Area normalized
+B = totalPerimeter_regionprops * sqrt(a / M); % Perimeter normalized
 
 % -------------------- Compute erfc Function --------------------
-k = 1:length(L);
+k = 1:length(D); % Corrected from k = 1:length(L);
 
 erfc_values = 0.5 * erfc((k - A) / (B / sqrt(2 * pi)));
+
+% Handle cases where B is zero to avoid division by zero
+if B == 0
+    erfc_values = zeros(size(k));
+    warning('Total Perimeter is zero. The erfc function cannot be computed.');
+end
 
 % -------------------- Count Number of Eigenvalues in Range --------------------
 num_eigenvalues = sum(D > 0.1 & D < 0.9);
@@ -78,13 +104,12 @@ else
     B_div_num_plunge_points = NaN; % Assign NaN to indicate undefined
 end
 
-
 % -------------------- Close All Existing Figures --------------------
 close all;
 
 % -------------------- Combined Plot with Tiled Layout --------------------
 % Create a new figure for all subplots with larger width and a slightly reduced height
-figure('Name', 'Combined Plots', 'NumberTitle', 'off', 'Position', [100, 100, 1400, 600]);
+figure('Name', 'Combined Plots', 'NumberTitle', 'off', 'Position', [100, 100, 1150, 400]);
 
 % Define a tiled layout with 2 rows and 3 columns to allow unequal column widths
 t = tiledlayout(2, 3, 'TileSpacing', 'Compact', 'Padding', 'Compact');
@@ -98,7 +123,7 @@ imshow(BW_clean);
 hold on;
 
 % Extract boundaries using bwboundaries
-[B_boundaries, L] = bwboundaries(BW_clean); % 'noholes' excludes boundaries of holes within objects
+[B_boundaries, ~] = bwboundaries(BW_clean); % Removed unused variable L
 
 % Define colors for different boundaries (optional)
 colors = lines(length(B_boundaries));
@@ -209,5 +234,7 @@ else
     grid on;
 end
 
+% -------------------- Print Rescaled Perimeter B --------------------
+fprintf('B (rescaled perimeter): %.2f pixels\n', B);
 
-
+% -------------------- End of Script --------------------
