@@ -192,4 +192,21 @@ function [symbol] = load_symbol(symb_index, M)
         end
     end
 
+    if symb_index == 12 %blobs
+        symbol = double(imresize(imread('blobs.png'), [M, M]));
+
+        borderWidth = M/8;
+
+        scaledSize = round(M - 2*borderWidth);
+        scaledImage = imresize(symbol, [scaledSize scaledSize]);
+        
+        borderedImage = zeros(M, M, size(symbol, 3), 'like', symbol);
+
+        startIdx = round(borderWidth + 1);
+        endIdx = round(borderWidth + scaledSize);
+        borderedImage(startIdx:endIdx, startIdx:endIdx, :) = scaledImage;
+
+        symbol = borderedImage;
+    end
+
 end
