@@ -209,4 +209,15 @@ function [symbol] = load_symbol(symb_index, M)
         symbol = borderedImage;
     end
 
+    if symb_index == 13 %ellipse
+        a = 2.3;
+        for i = 1:M
+            for j = 1:M
+                if (i - M/2)^2/a + (j - M/2)^2*a < (M/4)^2
+                    symbol(i, j) = 1;
+                end
+            end
+        end
+    end
+
 end

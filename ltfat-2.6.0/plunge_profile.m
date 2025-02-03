@@ -41,7 +41,7 @@ end
 [Fa, Fs] = framepair('dgt', g, 'dual', a, M);
 
 % -------------------- Load the Binary Symbol Image --------------------
-symbol = load_symbol(12, M); % Assuming load_symbol is a custom function
+symbol = load_symbol(13, M); % Assuming load_symbol is a custom function
 symbol = double(symbol > 0.5); % Binarize the symbol
 
 % -------------------- Convert Frame Coefficients to Native Coefficients --------------------

@@ -2,32 +2,26 @@
 addpath(genpath('ltfat-2.6.0'));
 ltfatstart;
 
-%set up pa
+%set up parameters
 a = 10;
 M = 100;
 L = a * M;
-
 g = pgauss(L);
-
 [Fa, Fs] = framepair('dgt', g, 'dual', a, M);
 
+%load symbol, compute area, perimeter, boundaries, etc.
 symbol = load_symbol(12, M);
-
 s = framenative2coef(Fa, symbol);
-
-D = framemuleigs(Fa, Fs, s, a * M);
-D = real(D);
-
 symbol = logical(symbol);
-perimeter = sum([regionprops(symbol, 'Perimeter').Perimeter]);
+perimeter = sum([regionprops(symbol, 'Perimeter').Perimeter]) * sqrt(a / M); % normalized
+area = sum(sum(s) * a / M; % normalized
+[boundaries, ~] = bwboundaries(symbol);
+colors = lines(length(boundaries));
 
-area = sum(s) * a / M; % Area normalized
-perimeter = perimeter * sqrt(a / M); % Perimeter normalized
-
-k = 1:length(D);
+%compute eigenvalues and erfc
+eigenvalues = real(framemuleigs(Fa, Fs, s, a * M));
+k = 1:length(eigenvalues);
 erfc_values = 0.5 * erfc(sqrt(2 * pi) * (k - area) / perimeter);
-
-close all;
 
 %set up figure
 figure('Name', 'Combined Plots', 'NumberTitle', 'off', 'Position', [100, 100, 1150, 400]);
@@ -38,12 +32,9 @@ nexttile(1, [2 1]);
 imshow(symbol);
 hold on;
 
-%highlight boundary
-[B_boundaries, ~] = bwboundaries(symbol);
-colors = lines(length(B_boundaries));
-
-for idx = 1:length(B_boundaries)
-    boundary = B_boundaries{idx};
+%plot boundaries
+for idx = 1:length(boundaries)
+    boundary = boundaries{idx};
     plot(boundary(:,2), boundary(:,1), 'LineWidth', 2, 'Color', colors(idx,:));
 end
 
@@ -54,7 +45,7 @@ title('Symbol with Boundary', 'FontSize', 14);
 nexttile(2, [1 2]);
 
 %plot eigenvalues
-plot(k, D, '-', 'LineWidth', 1.5, 'DisplayName', '$\lambda_k^\Omega$');
+plot(k, eigenvalues, '-', 'LineWidth', 1.5, 'DisplayName', '$\lambda_k^\Omega$');
 hold on;
 
 %plot erfc in same plot
@@ -73,7 +64,7 @@ hold off;
 %set up next figure
 nexttile(5, [1 2]);
 
-plot(k, D - erfc_values.', '-x', 'LineWidth', 1, 'Color', 'm', 'DisplayName', 'Error');
+plot(k, eigenvalues - erfc_values.', '-x', 'LineWidth', 1, 'Color', 'm', 'DisplayName', 'Error');
 
 %title, etc.
 title('Difference between Eigenvalues and erfc', 'FontSize', 14);

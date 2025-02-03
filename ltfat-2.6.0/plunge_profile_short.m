@@ -4,18 +4,17 @@ ltfatstart;
 
 %set up parameters
 a = 10;
-M = 100;
+M = 80;
 L = a * M;
 g = pgauss(L);
 [Fa, Fs] = framepair('dgt', g, 'dual', a, M);
+symbol = load_symbol(13, M); %0, 3, 13, 12
 
 %load symbol, compute area, perimeter, boundaries, etc.
-symbol = load_symbol(12, M);
 s = framenative2coef(Fa, symbol);
 symbol = logical(symbol);
-perimeter = sum([regionprops(symbol, 'Perimeter').Perimeter]);
+perimeter = sum([regionprops(symbol, 'Perimeter').Perimeter]) * sqrt(a / M); % normalized
 area = sum(s) * a / M; % normalized
-perimeter = perimeter * sqrt(a / M); % normalized
 [boundaries, ~] = bwboundaries(symbol);
 colors = lines(length(boundaries));
 
@@ -24,10 +23,8 @@ eigenvalues = real(framemuleigs(Fa, Fs, s, a * M));
 k = 1:length(eigenvalues);
 erfc_values = 0.5 * erfc(sqrt(2 * pi) * (k - area) / perimeter);
 
-%matlab
-close all;
-
 %set up figure
+close all;
 figure('Name', 'Combined Plots', 'NumberTitle', 'off', 'Position', [100, 100, 1150, 400]);
 t = tiledlayout(2, 3, 'TileSpacing', 'Compact', 'Padding', 'Compact');
 nexttile(1, [2 1]);
