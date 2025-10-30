@@ -16,7 +16,8 @@ for t = 1:2
         case 'box'
             g = zeros(L,1);
             w = floor(L/20);
-            g(1:w) = 1; g(end-w+1:end) = 1;
+            g(1:w) = 1;
+            g(end-w+1:end) = 1;
         otherwise
             error('Unsupported window type.');
     end
