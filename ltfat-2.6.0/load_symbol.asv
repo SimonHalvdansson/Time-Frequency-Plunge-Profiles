@@ -193,9 +193,10 @@ function [symbol] = load_symbol(symb_index, M)
     end
 
     if symb_index == 12 %blobs
-        symbol = 1-double(imresize(rgb2gray(imread('blobs.png')), [M, M])) / 255;
+        symbol = double(imresize(imread('blobs.png'), [M, M]));
+        sy,bo
 
-        borderWidth = M/40;
+        borderWidth = M/8;
 
         scaledSize = round(M - 2*borderWidth);
         scaledImage = imresize(symbol, [scaledSize scaledSize]);

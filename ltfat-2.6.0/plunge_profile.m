@@ -3,11 +3,11 @@ ltfatstart;
 
 % Parameters for frame and symbol
 a = 10;
-M = 40;
+M = 100;
 L = a * M; % Total window length
 
 % Choose between 'Gaussian' and 'Box'
-windowType = 'Gaussian';
+windowType = 'gaussian';
 
 switch lower(windowType)
     case 'gaussian'
@@ -24,7 +24,7 @@ end
 [Fa, Fs] = framepair('dgt', g, 'dual', a, M);
 
 %load symbol
-symbol = load_symbol(0, M);
+symbol = load_symbol(12, M);
 symbol = double(symbol > 0.5);
 BW = logical(symbol);
 
@@ -34,7 +34,7 @@ s = framenative2coef(Fa, symbol);
 D = framemuleigs(Fa, Fs, s, a * M);
 D = real(D);
 
-props = regionprops(BW_clean, 'Perimeter');
+props = regionprops(BW, 'Perimeter');
 totalPerimeter_regionprops = sum([props.Perimeter]);
 
 %compute erfc
@@ -63,10 +63,10 @@ t = tiledlayout(2, 3, 'TileSpacing', 'Compact', 'Padding', 'Compact');
 nexttile(1, [2 1]);
 
 % left symbol subfigure
-imshow(BW_clean);
+imshow(BW);
 hold on;
 
-[B_boundaries, ~] = bwboundaries(BW_clean);
+[B_boundaries, ~] = bwboundaries(BW);
 
 % Define colors for different boundaries
 colors = lines(length(B_boundaries));
