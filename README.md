@@ -6,6 +6,9 @@ This repository contains code to repeat the main experiments of the paper <a hre
 
 The python file <a href="https://github.com/SimonHalvdansson/Time-Frequency-Plunge-Profiles/blob/main/f(k)_plot.py">`f(k)_plot.py`</a> contains a numerical verification of Proposition 2.2 which was used to produce Figure 1 in the paper.
 
+### Abstract
+For time-frequency localization operators, related to the short-time Fourier transform, with symbol $R\Omega$, we work out the exact large $R$ eigenvalue behavior for rotationally invariant $\Omega$ and conjecture that the same relation holds for all scaled symbols $R \Omega$ as long as the window is the standard Gaussian. Specifically, we conjecture that the $k$-th eigenvalue of the localization operator with symbol $R\Omega$ converges to $\frac{1}{2}erfc\big( \sqrt{2\pi}\frac{k-R^2|\Omega|}{R|\partial \Omega|} \big)$ as $R \to \infty$. To support the conjecture, we compute the eigenvalues of discrete frame multipliers with various symbols using LTFAT and find that they agree with the behavior of the conjecture to a large degree.</div>
+
 ### Sorted eigenvalues validation
 <div align="center"> <img width="90%" src="sorted.png"/> </div>
 
